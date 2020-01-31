@@ -13,6 +13,7 @@ class TweetSetSuite {
     val set4c = set3.incl(c)
     val set4d = set3.incl(d)
     val set5 = set4c.incl(d)
+    val set6 = set5.incl(new Tweet(user="k", text="b seomthing", retweets=20))
   }
 
   def asSet(tweets: TweetSet): Set[Tweet] = {
@@ -38,6 +39,11 @@ class TweetSetSuite {
       assertEquals(2, size(set5.filter(tw => tw.retweets == 20)))
     }
 
+  @Test def `filter: twenty on set6`: Unit =
+    new TestSets {
+      assertEquals(3, size(set6.filter(tw => tw.retweets == 20)))
+    }
+
   @Test def `union: set4c and set4d`: Unit =
     new TestSets {
       assertEquals(4, size(set4c.union(set4d)))
@@ -53,12 +59,24 @@ class TweetSetSuite {
       assertEquals(4, size(set1.union(set5)))
     }
 
-  @Test def `descending: set5`: Unit =
+//  @Test def `descending: set5`: Unit =
+//    new TestSets {
+//      val trends = set5.descendingByRetweet
+//      assert(!trends.isEmpty)
+//      assert(trends.head.user == "a" || trends.head.user == "b")
+//    }
+  @Test def `mostRetweets: set5`: Unit =
     new TestSets {
-      val trends = set5.descendingByRetweet
-      assert(!trends.isEmpty)
-      assert(trends.head.user == "a" || trends.head.user == "b")
+      val trends = set5.mostRetweeted
+      assert(trends.user == "a" || trends.user == "b")
     }
+
+  @Test def `descending: for set3`: Unit =
+      new TestSets {
+        val trends = set3.descendingByRetweet
+        assert(!trends.isEmpty)
+        assert(trends.head.user == "a" || trends.head.user == "b")
+      }
 
 
   @Rule def individualTestTimeout = new org.junit.rules.Timeout(10 * 1000)
