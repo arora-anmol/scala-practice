@@ -1,0 +1,7 @@
+[0m[[0m[31merror[0m] [0m[0m/Users/anmolarora/Desktop/projects/scala-practice/forcomp/src/main/scala/forcomp/Anagrams.scala:39:104: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : forcomp.Anagrams.Occurrences[0m
+[0m[[0m[31merror[0m] [0m[0m    (which expands to)  List[(Char, Int)][0m
+[0m[[0m[31merror[0m] [0m[0m required: String[0m
+[0m[[0m[31merror[0m] [0m[0m  def sentenceOccurrences(s: Sentence): Occurrences = s.map(x=> wordOccurrences(x)).reduce((x, y) => x+y)[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                                                       ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

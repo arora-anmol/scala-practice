@@ -1,5 +1,7 @@
 package forcomp
 
+import scala.collection.mutable
+
 object Anagrams extends AnagramsInterface {
 
   /** A word is simply a `String`. */
@@ -36,7 +38,7 @@ object Anagrams extends AnagramsInterface {
   def wordOccurrences(w: Word): Occurrences = w.toLowerCase.groupBy(identity).mapValues(_.size).toList
 
   /** Converts a sentence into its character occurrence list. */
-  def sentenceOccurrences(s: Sentence): Occurrences = s.map(x: Word => wordOccurrences()
+  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s.reduce((x, y) => x+y))
 
   /** The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
    *  the words that have that occurrence count.
@@ -53,10 +55,21 @@ object Anagrams extends AnagramsInterface {
    *    List(('a', 1), ('e', 1), ('t', 1)) -> Seq("ate", "eat", "tea")
    *
    */
-  lazy val dictionaryByOccurrences: Map[Occurrences, List[Word]] = ???
+  lazy val dictionaryByOccurrences: Map[Occurrences, List[Word]] = dictionary.groupBy(x => wordOccurrences(x))
 
   /** Returns all the anagrams of a given word. */
-  def wordAnagrams(word: Word): List[Word] = ???
+  def wordAnagrams(word: Word): List[Word] = {
+    def permute(s: String): List[String] = s match {
+      case x if x.length == 0 => List("")
+      case x if x.length == 1 => List(x.toString)
+      case x if x.length >=2 => {
+        (0 until s.length).flatMap( x =>
+          permute(s.slice(0,x) + s.slice(x+1, s.length)).map(y => s(x) + y)
+        ).toList
+      }
+    }
+    permute(word).distinct
+  }
 
   /** Returns the list of all subsets of the occurrence list.
    *  This includes the occurrence itself, i.e. `List(('k', 1), ('o', 1))`
@@ -80,7 +93,28 @@ object Anagrams extends AnagramsInterface {
    *  Note that the order of the occurrence list subsets does not matter -- the subsets
    *  in the example above could have been displayed in some other order.
    */
-  def combinations(occurrences: Occurrences): List[Occurrences] = ???
+
+  def createMap(occurrences: Occurrences): mutable.Map[Char, Int] = {
+    var mutMap = scala.collection.mutable.Map[Char, Int]()
+    for (x <- occurrences) mutMap(x._1) = x._2
+    mutMap
+  }
+
+  def combinations(occurrences: Occurrences): List[Occurrences] = {
+
+    def recurse(occurenceSub: Occurrences): List[Occurrences] = {
+        val newOccurences = occurenceSub.filterNot(elm => elm._2 == 0)
+        println(newOccurences)
+        if (newOccurences.length == 1) {
+          if (newOccurences(0)._2 == 1) List(newOccurences)
+          else recurse(List((newOccurences(0)._1, newOccurences(0)._2-1))) ++ List(newOccurences)
+        }
+        newOccurences.flatMap(x =>
+        recurse(newOccurences.filterNot(elm => elm == x) ++ List((x._1, x._2-1)))) ++ List(newOccurences)
+      }
+    recurse(occurrences).distinct ++ List(List())
+  }
+  combinations(List(('a', 2), ('b', 2)))
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
    *
@@ -92,7 +126,13 @@ object Anagrams extends AnagramsInterface {
    *  Note: the resulting value is an occurrence - meaning it is sorted
    *  and has no zero-entries.
    */
-  def subtract(x: Occurrences, y: Occurrences): Occurrences = ???
+  def subtract(x: Occurrences, y: Occurrences): Occurrences = {
+    var xMap = createMap(x)
+    var yMap = createMap(y)
+
+    for (test <- xMap) xMap(test._1) = test._2 - yMap(test._1)
+    xMap.toList
+  }
 
   /** Returns a list of all anagram sentences of the given sentence.
    *
